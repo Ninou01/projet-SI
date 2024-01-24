@@ -1,7 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User, AbstractUser
-
-from .mixin import CustomUserMixin
+from django.contrib.auth.models import User
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -53,7 +53,7 @@ STATUS_CHOICES = [
 #     def role(self):
 #         return None
 
-class Patient(models.Model, CustomUserMixin):
+class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nom = models.CharField(max_length=255, blank=True, null=True)
     prenom = models.CharField(max_length=255, blank=True, null=True)
@@ -63,15 +63,30 @@ class Patient(models.Model, CustomUserMixin):
     num_tel = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(unique=True, null=True)
 
-
     class Meta:
         verbose_name_plural = "Patients"
+
+    def __str__(self):
+        return f"{self.nom} {self.prenom}"
+
+    def clean(self):
+        if self.dateNaissance and self.dateNaissance > timezone.now().date():
+            raise ValidationError("Date of birth cannot be greater than today's date.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        self.user.first_name = self.prenom
+        self.user.last_name = self.nom
+        self.user.username = f"{self.nom} {self.prenom}"
+        self.user.email = self.email
+        self.user.save() 
+        super().save(*args, **kwargs)
 
     @property
     def role(self):  # Fix the typo here
         return role.get("Patient")
     
-class Medecin(models.Model, CustomUserMixin):
+class Medecin(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     nom = models.CharField(max_length=255, blank=True, null=True)
     prenom = models.CharField(max_length=255, blank=True, null=True)
@@ -82,13 +97,29 @@ class Medecin(models.Model, CustomUserMixin):
     specialite = models.CharField(max_length=30, blank=True, null=True, choices=SPECIALITE_CHOICES)
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True, related_name='medecins')
     email = models.EmailField(unique=True, null=True)
-    
+
     class Meta:
         verbose_name_plural = "Medecins"
 
     @property
     def role(self):  # Fix the typo here
         return role.get("Patient")
+    
+    def __str__(self):
+        return f"{self.nom} {self.prenom}"
+    
+    def clean(self):
+        if self.dateNaissance and self.dateNaissance > timezone.now().date():
+            raise ValidationError("Date of birth cannot be greater than today's date.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        self.user.first_name = self.prenom
+        self.user.last_name = self.nom
+        self.user.username = f"{self.nom} {self.prenom}"
+        self.user.email = self.email
+        self.user.save() 
+        super().save(*args, **kwargs)
     
     def is_disponible(self, date, heure):
         return True
@@ -110,7 +141,7 @@ class Tache(models.Model):
     
 
 class Salle(models.Model):
-    numero = models.PositiveIntegerField()
+    numero = models.PositiveIntegerField(unique=True)
 
     def __str__(self):
         return f"Salle {self.numero}"
@@ -127,12 +158,27 @@ class RendezVous(models.Model):
     salle = models.ForeignKey(Salle, on_delete=models.CASCADE)
     status = models.CharField(max_length=30, default=STATUS_CHOICES[0][1], choices=STATUS_CHOICES)
 
+    old_status = None
+
     def __str__(self):
         return f"RendezVous for {self.patient} with {self.medecin} on {self.Date} at {self.Heure}"
     
+    def clean(self):
+        if self.pk is not None:  # Check if the instance has already been saved
+            original_instance = RendezVous.objects.get(pk=self.pk)
+            self.old_status = original_instance.status  # Store the old status
+
+            if self.old_status == STATUS_CHOICES[3][1]:  # Check if original status is 'terminé'
+                raise ValueError("Cannot modify a RendezVous with status 'terminé'")
+            
+        current_datetime = timezone.now()
+        if self.Date and self.Date < current_datetime.date():
+            raise ValidationError("Date must be greater than or equal to the current date.")
+        elif self.Heure and self.Date == current_datetime.date() and self.Heure < current_datetime.time():
+            raise ValidationError("Heure must be greater than or equal to the current time.")
+    
     def save(self, *args, **kwargs):
-        if self.status == STATUS_CHOICES[3][1]:  # Check if status is 'terminé'
-            raise ValueError("Cannot modify a RendezVous with status 'terminé'")
+        self.clean()
         super().save(*args, **kwargs)
     
 class Consultation(models.Model): 

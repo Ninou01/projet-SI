@@ -28,3 +28,11 @@ venv.bak/
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+# Ignore Django Migrations in Development if you are working on team
+
+# Ignore Django migration files
+**/migrations/
+*.pyc
+*.pyo
+__pycache__/
