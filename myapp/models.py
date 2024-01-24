@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 # Create your models here.
 
@@ -29,7 +29,30 @@ STATUS_CHOICES = [
         ('terminé', 'terminé'),
     ]
 
-class CustomUser(User):
+# class CustomUser(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     nom = models.CharField(max_length=255, blank=True, null=True)
+#     prenom = models.CharField(max_length=255, blank=True, null=True)
+#     dateNaissance = models.DateField(blank=True, null=True)
+#     sexe = models.CharField(max_length=10, blank=True, null=True, choices=sexe_choices)
+#     adresse = models.TextField(blank=True, null=True)
+#     num_tel = models.CharField(max_length=20, blank=True, null=True)
+
+#     def __str__(self):
+#         return f"{self.Nom} {self.Prenom}"
+
+#     def save(self, *args, **kwargs):
+#         self.user.first_name = self.prenom
+#         self.user.last_name = self.nom
+#         self.user.username = f"{self.last_name} {self.first_name}"
+#         super().save(*args, **kwargs)
+
+#     @property
+#     def role(self):
+#         return None
+
+class Patient(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     nom = models.CharField(max_length=255, blank=True, null=True)
     prenom = models.CharField(max_length=255, blank=True, null=True)
     dateNaissance = models.DateField(blank=True, null=True)
@@ -41,16 +64,11 @@ class CustomUser(User):
         return f"{self.Nom} {self.Prenom}"
 
     def save(self, *args, **kwargs):
-        self.first_name = self.prenom
-        self.last_name = self.nom
-        self.username = f"{self.last_name} {self.first_name}"
+        self.user.first_name = self.prenom
+        self.user.last_name = self.nom
+        self.user.username = f"{self.last_name} {self.first_name}"
         super().save(*args, **kwargs)
 
-    @property
-    def role(self):
-        return None
-
-class Patient(CustomUser):
 
     class Meta:
         verbose_name_plural = "Patients"
@@ -59,7 +77,24 @@ class Patient(CustomUser):
     def role(self):  # Fix the typo here
         return role.get("Patient")
     
-class Medecin(CustomUser):
+class Medecin(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    nom = models.CharField(max_length=255, blank=True, null=True)
+    prenom = models.CharField(max_length=255, blank=True, null=True)
+    dateNaissance = models.DateField(blank=True, null=True)
+    sexe = models.CharField(max_length=10, blank=True, null=True, choices=sexe_choices)
+    adresse = models.TextField(blank=True, null=True)
+    num_tel = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.Nom} {self.Prenom}"
+
+    def save(self, *args, **kwargs):
+        self.user.first_name = self.prenom
+        self.user.last_name = self.nom
+        self.user.username = f"{self.last_name} {self.first_name}"
+        super().save(*args, **kwargs)
+
     specialite = models.CharField(max_length=30, blank=True, null=True, choices=SPECIALITE_CHOICES)
     service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True, related_name='medecins')
     
