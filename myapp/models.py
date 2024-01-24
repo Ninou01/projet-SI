@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -127,6 +128,15 @@ class Medecin(models.Model):
 class Service(models.Model):
     nom = models.CharField(max_length=255)
     chef = models.OneToOneField(Medecin, on_delete=models.SET_NULL, null=True, blank=True, related_name='chef_de_service')
+
+    def clean(self):
+        if self.chef and self.chef.service.pk != self.pk:
+            raise ValidationError("chef_service must be from the current service")
+        
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"Service {self.nom} - Chef: {self.chef}"
