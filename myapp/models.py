@@ -11,7 +11,7 @@ role = {
     "Medecin": "Medecin", 
 }
 
-sexe_choices = [
+SEXE_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
 ]
@@ -23,6 +23,15 @@ SPECIALITE_CHOICES = [
     ('Rhumatologue', 'Rhumatologue'),
     ('ORL', 'ORL'),
     ('Generaliste', 'Generaliste'),
+]
+
+SERVICE_NAME_CHOICES = [
+    ('Cardiologie', 'Cardiologie'),
+    ('Neurologie', 'Neurologie'),
+    ('Urologie', 'Urologie'),
+    ('Rhumatologie', 'Rhumatologie'),
+    ('Oto-rhino-laryngologie', 'Oto-rhino-laryngologie'),
+    ('Médecine Générale', 'Médecine Générale'),
 ]
 
 STATUS_CHOICES = [
@@ -37,7 +46,7 @@ STATUS_CHOICES = [
 #     nom = models.CharField(max_length=255, blank=True, null=True)
 #     prenom = models.CharField(max_length=255, blank=True, null=True)
 #     dateNaissance = models.DateField(blank=True, null=True)
-#     sexe = models.CharField(max_length=10, blank=True, null=True, choices=sexe_choices)
+#     sexe = models.CharField(max_length=10, blank=True, null=True, choices=SEXE_CHOICES)
 #     adresse = models.TextField(blank=True, null=True)
 #     num_tel = models.CharField(max_length=20, blank=True, null=True)
 
@@ -59,7 +68,7 @@ class Patient(models.Model):
     nom = models.CharField(max_length=255, blank=True, null=True)
     prenom = models.CharField(max_length=255, blank=True, null=True)
     dateNaissance = models.DateField(blank=True, null=True)
-    sexe = models.CharField(max_length=10, blank=True, null=True, choices=sexe_choices)
+    sexe = models.CharField(max_length=10, blank=True, null=True, choices=SEXE_CHOICES)
     adresse = models.TextField(blank=True, null=True)
     num_tel = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(unique=True, null=True)
@@ -76,9 +85,10 @@ class Patient(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
+        
         self.user.first_name = self.prenom
         self.user.last_name = self.nom
-        self.user.username = f"{self.nom} {self.prenom}"
+        self.user.username = f"{self.email}"
         self.user.email = self.email
         self.user.save() 
         super().save(*args, **kwargs)
@@ -92,7 +102,7 @@ class Medecin(models.Model):
     nom = models.CharField(max_length=255, blank=True, null=True)
     prenom = models.CharField(max_length=255, blank=True, null=True)
     dateNaissance = models.DateField(blank=True, null=True)
-    sexe = models.CharField(max_length=10, blank=True, null=True, choices=sexe_choices)
+    sexe = models.CharField(max_length=10, blank=True, null=True, choices=SEXE_CHOICES)
     adresse = models.TextField(blank=True, null=True)
     num_tel = models.CharField(max_length=20, blank=True, null=True)
     specialite = models.CharField(max_length=30, blank=True, null=True, choices=SPECIALITE_CHOICES)
@@ -117,7 +127,7 @@ class Medecin(models.Model):
         self.clean()
         self.user.first_name = self.prenom
         self.user.last_name = self.nom
-        self.user.username = f"{self.nom} {self.prenom}"
+        self.user.username = f"{self.email}"
         self.user.email = self.email
         self.user.save() 
         super().save(*args, **kwargs)
@@ -126,11 +136,11 @@ class Medecin(models.Model):
         return True
     
 class Service(models.Model):
-    nom = models.CharField(max_length=255)
+    nom = models.CharField(max_length=255, choices=SERVICE_NAME_CHOICES, unique=True)
     chef = models.OneToOneField(Medecin, on_delete=models.SET_NULL, null=True, blank=True, related_name='chef_de_service')
 
     def clean(self):
-        if self.chef and self.chef.service.pk != self.pk:
+        if self.chef and self.chef.service and self.chef.service.pk != self.pk:
             raise ValidationError("chef_service must be from the current service")
         
     def save(self, *args, **kwargs):
@@ -161,8 +171,8 @@ class Salle(models.Model):
 
 
 class RendezVous(models.Model):
-    Date = models.DateField(blank=True, null=True)
-    Heure = models.TimeField(blank=True, null=True)
+    date = models.DateField(blank=True, null=True)
+    heure = models.TimeField(blank=True, null=True)
     medecin = models.ForeignKey(Medecin, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     salle = models.ForeignKey(Salle, on_delete=models.CASCADE)
@@ -203,6 +213,8 @@ class Consultation(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.pk:
+            if self.rendezvous.status == STATUS_CHOICES[2][1]:
+                raise ValueError("Cannot create consultation for a RendezVous with status 'annulé'")
             self.rendezvous.status = STATUS_CHOICES[3][1]  # Set status to 'terminé'
             self.rendezvous.save()  # Save the updated RendezVous instance
         super().save(*args, **kwargs)
