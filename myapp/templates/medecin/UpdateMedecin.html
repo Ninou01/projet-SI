@@ -1,0 +1,64 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+
+
+<h2>Update Medecin Information</h2>
+
+<form method="post" action="{% url 'UpdateMedecin' medecin.id %}">
+    {% csrf_token %}
+
+    <!-- Include other form fields as needed -->
+
+    <label for="nom">Nom:</label>
+    <input type="text" name="nom" value="{{ medecin.nom }}"><br>
+
+    <label for="prenom">Prenom:</label>
+    <input type="text" name="prenom" value="{{ medecin.prenom }}"><br>
+
+    <label for="adresse">Adresse:</label>
+    <input type="text" name="adresse" value="{{ medecin.adresse }}"><br>
+
+    <label for="num_tel">Num Tel:</label>
+    <input type="text" name="num_tel" value="{{ medecin.num_tel }}"><br>
+
+    <label for="email">Email:</label>
+    <input type="text" name="email" value="{{ medecin.email }}"><br>
+
+    <label for="dateNaissance">Date de Naissance:</label>
+    <input type="date" name="dateNaissance" 
+    value="{% if medecin.dateNaissance %}{{ medecin.dateNaissance|date:'Y-m-d' }}{% endif %}">
+    <br>
+
+
+    <label for="sexe">Sexe:</label>
+    <select name="sexe">
+        <option value="M" {% if medecin.sexe == 'M' %}selected{% endif %}>Male</option>
+        <option value="F" {% if medecin.sexe == 'F' %}selected{% endif %}>Female</option>
+    </select><br>
+
+    <label for="specialite">Specialite:</label>
+    <select name="specialite">
+        {% for choice in SPECIALITE_CHOICES %}
+            <option value="{{ choice.0 }}" {% if medecin.specialite == choice.0 %}selected{% endif %}>
+                {{ choice.1 }}
+            </option>
+        {% endfor %}
+    </select><br>
+
+    <label for="service">Service:</label>
+    <select name="service">
+        <option value="">Select a Service</option>
+        {% for service in services %}
+            <option value="{{ service.id }}" {% if medecin.service_id == service.id %}selected{% endif %}>
+                {{ service.nom }}
+            </option>
+        {% endfor %}
+    </select><br>
+
+    <button type="submit">Update Medecin</button>
+</form>
+
+{% include "../errors.html" %}
+{% endblock %}

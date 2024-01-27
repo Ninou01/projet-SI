@@ -1,0 +1,12 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<ul>
+        {% for medecin in medecins %}
+        <li>
+            {{medecin}}
+        </li>
+        {% endfor %}
+</ul>
+{% endblock %}

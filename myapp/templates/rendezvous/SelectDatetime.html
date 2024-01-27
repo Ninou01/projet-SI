@@ -1,0 +1,20 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Select Date and Time</h2>
+
+<form method="post" action="">
+    {% csrf_token %}
+
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="heure">Heure:</label>
+    <input type="time" id="heure" name="heure" required>
+
+    <button type="submit">Find Available Options</button>
+</form>
+{% include "../errors.html" %}
+
+{% endblock %}

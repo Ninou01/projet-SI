@@ -1,0 +1,12 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<ul>
+    {% for rdv in rendezVous %}
+    <li>
+        {{rdv}}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

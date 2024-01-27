@@ -14,6 +14,10 @@ User = get_user_model()
 #####
 # utils
 
+def getServiceById(id):
+    service = Service.objects.get(id=id)
+    return service
+
 def getServiceByName(nom):
     service = Service.objects.get(nom=nom)
     return service
@@ -26,8 +30,8 @@ def getPatientById(id):
     patient = Patient.objects.get(id=id)
     return patient
 
-def getSalleByNumero(numero):
-    salle = Salle.objects.get(numero=numero)
+def getSalleById(id):
+    salle = Salle.objects.get(id=id)
     return salle
 
 def getRendezVousById(id):
@@ -65,7 +69,7 @@ def createMedecin(POST):
     email = POST.get('email')
     password = POST.get('password')
     user = createUser(username, email, password)
-    service = getServiceByName(POST.get('service'))
+    service = getServiceById(POST.get('service'))
     medecin = Medecin.objects.create(
         user=user,
         service=service,
@@ -95,10 +99,10 @@ def createSalle(POST):
 def createRendezVous(POST):
     date = POST.get('date')
     heure = POST.get('heure')
-    medecin = getMedecinById('medecin')
-    patient = getPatientById('patient')
-    salle = getSalleByNumero('salle')
-    status = POST.get('status')
+    medecin = getMedecinById(POST.get('medecin'))
+    patient = getPatientById(POST.get('patient'))
+    salle = getSalleById(POST.get('salle'))
+    
 
     rendezvous = RendezVous.objects.create(
         date=date,
@@ -106,7 +110,6 @@ def createRendezVous(POST):
         medecin=medecin,
         patient=patient,
         salle=salle,
-        status=status,
     )
     return rendezvous
 
@@ -154,9 +157,9 @@ def updateMedecin(medecin_instance, POST):
     medecin_instance.specialite = POST.get('specialite')
 
     # Update Service if necessary
-    service_name = POST.get('service')
-    if service_name:
-        service = getServiceByName(service_name)
+    service_id = POST.get('service')
+    if service_id:
+        service = getServiceById(service_id)
         if service:
             medecin_instance.service = service
 
@@ -189,41 +192,49 @@ def updateTache(tache_instance, POST):
 
 
 def updateRendezVous(rendezvous_instance, POST):
-    # Update RendezVous information
-    rendezvous_instance.date = POST.get('date')
-    rendezvous_instance.heure = POST.get('heure')
     rendezvous_instance.status = POST.get('status')
-
-    # Update Medecin if necessary
-    medecin_id = POST.get('medecin')
-    if medecin_id:
-        try:
-            medecin = Medecin.objects.get(pk=medecin_id)
-            rendezvous_instance.medecin = medecin
-        except Medecin.DoesNotExist:
-            raise ValueError("Invalid medecin.")
-
-    # Update Patient if necessary
-    patient_id = POST.get('patient')
-    if patient_id:
-        try:
-            patient = Patient.objects.get(pk=patient_id)
-            rendezvous_instance.patient = patient
-        except Patient.DoesNotExist:
-            raise ValueError("Invalid patient.")
-
-    # Update Salle if necessary
-    salle_numero = POST.get('salle')
-    if salle_numero:
-        salle = getSalleByNumero(salle_numero)
-        if salle:
-            rendezvous_instance.salle = salle
-
+    
     # Save changes
     rendezvous_instance.save()
 
     return rendezvous_instance
 
+# def updateRendezVous(rendezvous_instance, POST):
+#     # Update RendezVous information
+#     rendezvous_instance.date = POST.get('date')
+#     rendezvous_instance.heure = POST.get('heure')
+#     rendezvous_instance.status = POST.get('status')
+
+#     # Update Medecin if necessary
+#     medecin_id = POST.get('medecin')
+#     if medecin_id:
+#         try:
+#             medecin = Medecin.objects.get(pk=medecin_id)
+#             rendezvous_instance.medecin = medecin
+#         except Medecin.DoesNotExist:
+#             raise ValueError("Invalid medecin.")
+
+#     # Update Patient if necessary
+#     patient_id = POST.get('patient')
+#     if patient_id:
+#         try:
+#             patient = Patient.objects.get(pk=patient_id)
+#             rendezvous_instance.patient = patient
+#         except Patient.DoesNotExist:
+#             raise ValueError("Invalid patient.")
+
+#     # Update Salle if necessary
+#     salle_id = POST.get('salle')
+#     if salle_id:
+#         salle = getSalleById(salle_id)
+#         if salle:
+#             rendezvous_instance.salle = salle
+
+#     # Save changes
+#     rendezvous_instance.save()
+
+#     return rendezvous_instance
+ 
 def updateConsultation(consultation_instance, POST):
     # Update Consultation information
     consultation_instance.diagnostique = POST.get('diagnostique')

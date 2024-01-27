@@ -1,8 +1,11 @@
 from collections.abc import Iterable
+from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.utils.text import slugify
+
 
 # Create your models here.
 
@@ -36,7 +39,7 @@ SERVICE_NAME_CHOICES = [
 
 STATUS_CHOICES = [
         ('en-attente', 'en-attente'),
-        ('confirmé', 'confirmé'),
+        # ('confirmé', 'confirmé'),
         ('annulé', 'annulé'),
         ('terminé', 'terminé'),
     ]
@@ -80,8 +83,11 @@ class Patient(models.Model):
         return f"{self.nom} {self.prenom}"
 
     def clean(self):
-        if self.dateNaissance and self.dateNaissance > timezone.now().date():
-            raise ValidationError("Date of birth cannot be greater than today's date.")
+        if self.dateNaissance:
+            dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
+            if dateNaissance > timezone.now().date():
+                raise ValidationError("Date of birth cannot be greater than today's date.")
+        
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -120,8 +126,10 @@ class Medecin(models.Model):
         return f"{self.nom} {self.prenom}"
     
     def clean(self):
-        if self.dateNaissance and self.dateNaissance > timezone.now().date():
-            raise ValidationError("Date of birth cannot be greater than today's date.")
+        if self.dateNaissance:
+            dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
+            if dateNaissance > timezone.now().date():
+                raise ValidationError("Date of birth cannot be greater than today's date.")
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -133,17 +141,21 @@ class Medecin(models.Model):
         super().save(*args, **kwargs)
     
     def is_disponible(self, date, heure):
-        return True
+        rdv = RendezVous.objects.filter(medecin__pk=self.id, heure=heure, date=date, status='en-attente').first()
+        return not bool(rdv)
     
 class Service(models.Model):
     nom = models.CharField(max_length=255, choices=SERVICE_NAME_CHOICES, unique=True)
     chef = models.OneToOneField(Medecin, on_delete=models.SET_NULL, null=True, blank=True, related_name='chef_de_service')
+    slug = models.CharField(max_length=255, null=True, blank=True, unique=True)
+
 
     def clean(self):
         if self.chef and self.chef.service and self.chef.service.pk != self.pk:
             raise ValidationError("chef_service must be from the current service")
         
     def save(self, *args, **kwargs):
+        self.slug = slugify(self.nom)
         self.clean()
         super().save(*args, **kwargs)
 
@@ -167,7 +179,8 @@ class Salle(models.Model):
         return f"Salle {self.numero}"
     
     def is_disponible(self, date, heure):
-        return True
+        rdv = RendezVous.objects.filter(salle__pk=self.id, heure=heure, date=date, status='en-attente').first()
+        return not bool(rdv)
 
 
 class RendezVous(models.Model):
@@ -181,21 +194,26 @@ class RendezVous(models.Model):
     old_status = None
 
     def __str__(self):
-        return f"RendezVous for {self.patient} with {self.medecin} on {self.Date} at {self.Heure}"
+        return f"RendezVous for {self.patient} with {self.medecin} on {self.date} at {self.heure}"
     
     def clean(self):
         if self.pk is not None:  # Check if the instance has already been saved
             original_instance = RendezVous.objects.get(pk=self.pk)
             self.old_status = original_instance.status  # Store the old status
 
-            if self.old_status == STATUS_CHOICES[3][1]:  # Check if original status is 'terminé'
+            if self.old_status == dict(STATUS_CHOICES)["terminé"]:  # Check if original status is 'terminé'
                 raise ValueError("Cannot modify a RendezVous with status 'terminé'")
-            
-        current_datetime = timezone.now()
-        if self.Date and self.Date < current_datetime.date():
-            raise ValidationError("Date must be greater than or equal to the current date.")
-        elif self.Heure and self.Date == current_datetime.date() and self.Heure < current_datetime.time():
-            raise ValidationError("Heure must be greater than or equal to the current time.")
+        # else:    
+        #     if self.date:
+        #         current_datetime = timezone.now()
+        #         date = datetime.strptime(self.date, "%Y-%m-%d").date()
+        #         if date < current_datetime.date():
+        #             raise ValidationError("Date must be greater than or equal to the current date.")
+                
+        #         if self.heure:
+        #             heure = datetime.strptime(self.heure, "%H:%M").time()
+        #             if self.date == current_datetime.date() and heure < current_datetime.time():
+        #                 raise ValidationError("Heure must be greater than or equal to the current time.")
     
     def save(self, *args, **kwargs):
         self.clean()
@@ -206,6 +224,14 @@ class Consultation(models.Model):
     diagnostique = models.TextField()
     prescription = models.TextField()
 
+    @property
+    def patient(self):
+        return self.rendezvous.patient
+
+    @property
+    def medecin(self):
+        return self.rendezvous.medecin
+
     def __str__(self):
         patient_name = self.rendezvous.patient
         doctor_name = self.rendezvous.medecin
@@ -213,9 +239,9 @@ class Consultation(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.pk:
-            if self.rendezvous.status == STATUS_CHOICES[2][1]:
+            if self.rendezvous.status == dict(STATUS_CHOICES)["annulé"]:
                 raise ValueError("Cannot create consultation for a RendezVous with status 'annulé'")
-            self.rendezvous.status = STATUS_CHOICES[3][1]  # Set status to 'terminé'
+            self.rendezvous.status = dict(STATUS_CHOICES)["terminé"]  # Set status to 'terminé'
             self.rendezvous.save()  # Save the updated RendezVous instance
         super().save(*args, **kwargs)
 

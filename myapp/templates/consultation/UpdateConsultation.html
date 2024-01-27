@@ -1,0 +1,20 @@
+
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Update Consultation</h1>
+
+<form method="post" action="{% url 'UpdateConsultation' consultation.id %}">
+    {% csrf_token %}
+    
+    <label for="diagnostique">Diagnostique:</label>
+    <textarea name="diagnostique" id="diagnostique" rows="4" cols="50">{{ consultation.diagnostique }}</textarea>
+
+    <label for="prescription">Prescription:</label>
+    <textarea name="prescription" id="prescription" rows="4" cols="50">{{ consultation.prescription }}</textarea>
+    
+    <button type="submit">Update Consultation</button>
+</form>
+{% include "../errors.html" %}
+{% endblock %}

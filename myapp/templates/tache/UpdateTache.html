@@ -1,0 +1,22 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+        <h2>Update Tache</h2>
+        
+        <form method="post" action="{% url 'UpdateTache' tache.id %}">
+            {% csrf_token %}
+        
+            <label for="titre">Titre:</label>
+            <input type="text" name="titre" value="{{ tache.titre }}" required>
+        
+            <label for="description">Description:</label>
+            <textarea name="description" required>{{ tache.description }}</textarea>
+        
+            <!-- Add any additional fields from your Tache model -->
+        
+            <button type="submit">Update Tache</button>
+        </form>
+{% include "../errors.html" %}
+{% endblock %}
+

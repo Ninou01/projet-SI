@@ -1,0 +1,9 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+        {% for tache in taches %}
+        <br>
+            {{tache}}
+        {% endfor %}
+{% endblock %}

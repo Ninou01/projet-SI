@@ -1,0 +1,56 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+
+    <label for="nom">Nom:</label>
+    <input type="text" id="nom" name="nom" required>
+
+    <label for="prenom">Prenom:</label>
+    <input type="text" id="prenom" name="prenom" required>
+
+    <label for="dateNaissance">Date de Naissance:</label>
+    <input type="date" id="dateNaissance" name="dateNaissance" required>
+
+    <label for="sexe">Sexe:</label>
+    <select id="sexe" name="sexe" required>
+        <option value="M">Male</option>
+        <option value="F">Female</option>
+    </select>
+
+    <label for="adresse">Adresse:</label>
+    <textarea id="adresse" name="adresse" required></textarea>
+
+    <label for="num_tel">Numéro de Téléphone:</label>
+    <input type="tel" id="num_tel" name="num_tel" pattern="^(00213|\+213|0)(5|6|7)[0-9]{8}$" required>
+    <small>Format: 00213XXXXXXXXX, +213XXXXXXXXX, 0XXXXXXXXX</small>
+
+    <label for="specialite">Spécialité:</label>
+    <select id="specialite" name="specialite" required>
+        {% for specialite_choice in specialites %}
+            {{specialite_choice}}
+            <option value="{{ specialite_choice }}">{{ specialite_choice }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="service">Service:</label>
+    <select id="service" name="service" required>
+        {% for service_choice in services %}
+            {{service_choice}}
+            <option value="{{ service_choice }}">{{ service_choice }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+
+    <button type="submit">Add Medecin</button>
+</form>
+
+{% include "../errors.html" %}
+{% endblock %}

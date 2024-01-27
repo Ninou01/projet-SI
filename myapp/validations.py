@@ -1,5 +1,7 @@
+from datetime import datetime
 import re
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from django.utils import timezone
 from .models import (
@@ -14,6 +16,7 @@ from .models import (
     RendezVous,
 )
 
+User = get_user_model()
 
 def validate_password_like_django(password):
   """
@@ -58,12 +61,18 @@ def validateCreatePatient(POST):
         errors.append("Email is required and should be a non-empty string.")
     elif not re.match(r"[^@]+@[^@]+\.[^@]+", POST.get("email")):
         errors.append("Invalid email format.")
-    elif Patient.objects.filter(email=POST.get("email")).exists():
-        errors.append("Email is already in use by another patient.")
+    elif User.objects.filter(email=POST.get("email")).exists():
+        errors.append("Email is already in use")
 
     # Validate date of birth
-    if POST.get('dateNaissance') and POST.get('dateNaissance') > timezone.now().date():
-        errors.append("Date of birth cannot be greater than today's date.")
+    
+    if POST.get('dateNaissance'):
+        dateNaissance = datetime.strptime(POST.get('dateNaissance'), "%Y-%m-%d").date()
+        if dateNaissance > timezone.now().date():
+            errors.append("Date of birth cannot be greater than today's date.")
+    else: 
+            errors.append("Date of birth cannot be null.")
+
 
     # Validate sexe against choices
     if POST.get('sexe') not in dict(SEXE_CHOICES).keys():
@@ -91,16 +100,19 @@ def validateUpdatePatient(POST, patient_instance):
 
     # Validate email format and uniqueness
     if POST.get('email'):
+        user = User.objects.get(email=POST.get('email'))
         if not isinstance(POST.get('email'), str):
             errors.append("Email is required and should be a non-empty string.")
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", POST.get('email')):
             errors.append("Invalid email format.")
-        elif Patient.objects.exclude(pk=patient_instance.pk).filter(email=POST.get('email')).exists():
-            errors.append("Email is already in use by another patient.")
+        elif (user and patient_instance.user != user):
+            errors.append("Email is already in use")
 
     # Validate date of birth
-    if POST.get("dateNaissance") and POST.get("dateNaissance") > timezone.now().date():
-        errors.append("Date of birth cannot be greater than today's date.")
+    if POST.get('dateNaissance'):
+        dateNaissance = datetime.strptime(POST.get('dateNaissance'), "%Y-%m-%d").date()
+        if dateNaissance > timezone.now().date():
+            errors.append("Date of birth cannot be greater than today's date.")
 
     # Validate sexe against choices
     if POST.get('sexe') not in dict(SEXE_CHOICES).keys():
@@ -144,12 +156,16 @@ def validateCreateMedecin(POST):
         errors.append("Email is required and should be a non-empty string.")
     elif not re.match(r"[^@]+@[^@]+\.[^@]+", POST.get('email')):
         errors.append("Invalid email format.")
-    elif Medecin.objects.filter(email=POST.get('email')).exists():
-        errors.append("Email is already in use by another medecin.")
+    elif User.objects.filter(email=POST.get('email')).exists():
+        errors.append("Email is already in use")
 
     # Validate date of birth
-    if POST.get('dateNaissance') and POST.get('dateNaissance') > timezone.now().date():
-        errors.append("Date of birth cannot be greater than today's date.")
+    if POST.get('dateNaissance'):
+        dateNaissance = datetime.strptime(POST.get('dateNaissance'), "%Y-%m-%d").date()
+        if dateNaissance > timezone.now().date():
+            errors.append("Date of birth cannot be greater than today's date.")
+    else: 
+            errors.append("Date of birth cannot be null.")
 
     # Validate sexe against choices
     if POST.get('sexe') not in dict(SEXE_CHOICES).keys():
@@ -187,16 +203,19 @@ def validateUpdateMedecin(POST, medecin_instance):
 
     # Validate email format and uniqueness
     if POST.get('email'):
+        user = User.objects.get(email=POST.get('email'))
         if not isinstance(POST.get('email'), str):
             errors.append("Email is required and should be a non-empty string.")
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", POST.get('email')):
             errors.append("Invalid email format.")
-        elif Medecin.objects.exclude(pk=medecin_instance.pk).filter(email=POST.get('email')).exists():
-            errors.append("Email is already in use by another medecin.")
+        elif (user and medecin_instance.user != user):
+            errors.append("Email is already in use")
 
     # Validate date of birth
-    if POST.get('dateNaissance') and POST.get('dateNaissance') > timezone.now().date():
-        errors.append("Date of birth cannot be greater than today's date.")
+    if POST.get('dateNaissance'):
+        dateNaissance = datetime.strptime(POST.get('dateNaissance'), "%Y-%m-%d").date()
+        if dateNaissance > timezone.now().date():
+            errors.append("Date of birth cannot be greater than today's date.")
 
     # Validate sexe against choices
     if POST.get('sexe') and POST.get('sexe') not in dict(SEXE_CHOICES).keys():
@@ -228,8 +247,8 @@ def validateUpdateService(POST, service_instance):
     errors = []
 
     # Validate service name against choices
-    if POST.get('nom') not in dict(SERVICE_NAME_CHOICES).keys():
-        errors.append("Invalid value for service name. Please choose from the provided options.")
+    # if POST.get('nom') not in dict(SERVICE_NAME_CHOICES).keys():
+    #     errors.append("Invalid value for service name. Please choose from the provided options.")
 
     # Validate chef_medecin (if provided)
     if POST.get('chef_medecin'):
@@ -246,9 +265,12 @@ def validateUpdateService(POST, service_instance):
 def validateCreateTache(POST):
     errors = []
 
-    if not isinstance(POST.get('titre'), str) or not POST.get('titre'):
+    titre = POST.get('titre')
+    if not titre and not titre.strip():
         errors.append("Titre is required and should be a non-empty string.")
-    if not isinstance(POST.get('description'), str) or not POST.get('description'):
+
+    description = POST.get('description')
+    if not description and not description.strip():
         errors.append("Description is required and should be a non-empty string.")
 
     # Validate service
@@ -261,10 +283,13 @@ def validateCreateTache(POST):
 def validateUpdateTache(POST):
     errors = []
 
-    if POST.get('titre') and not isinstance(POST.get('titre'), str):
-        errors.append("Titre is required and should be a non-empty string.")
-    if POST.get('description') and not isinstance(POST.get('description'), str):
-        errors.append("Description is required and should be a non-empty string.")
+    titre = POST.get('titre')
+    if not titre or not titre.strip():
+        errors.append("Titre cannot be blank.")
+
+    description = POST.get('description')
+    if not description or not description.strip():
+        errors.append("Description cannot be blank.")
 
     # Return result
     return not bool(errors), errors
@@ -308,62 +333,87 @@ def validateCreateRendezVous(POST):
     errors = []
 
     # Check if all fields are provided
-    if not all([POST.get('date'), POST.get('heure'), POST.get('medecin'), POST.get('patient'), POST.get('salle')]):
-        errors.append("All fields are required.")
-    else: 
+    required_fields = ['date', 'heure', 'medecin', 'patient', 'salle']
+    missing_fields = [field for field in required_fields if not POST.get(field)]
+    if missing_fields:
+        errors.extend([f"{field.capitalize()} is required." for field in missing_fields])
+    else:
         # Validate datetime fields
         current_datetime = timezone.now()
-        if POST.get('date') and POST.get('date') < current_datetime.date():
+        if POST.get('date') < str(current_datetime.date()):
             errors.append("Date must be greater than or equal to the current date.")
-        elif POST.get('heure') and POST.get('date') == current_datetime.date() and POST.get('heure') < current_datetime.time():
+        elif POST.get('date') == str(current_datetime.date()) and POST.get('heure') < str(current_datetime.time()):
             errors.append("Heure must be greater than or equal to the current time.")
 
         # Validate medecin and salle availability
-        medecin = Medecin.objects.get(pk=POST.get('medecin'))
-        if not medecin: 
-            errors.append("Medecin is not found")
+        try:
+            medecin = Medecin.objects.get(pk=POST.get('medecin'))
+            if not medecin.is_disponible(POST.get('date'), POST.get('heure')):
+                errors.append("Medecin is not available at the specified date and heure.")
+        except Medecin.DoesNotExist:
+            errors.append("Medecin not found.")
 
-        elif not medecin.is_disponible(POST.get('date'), POST.get('heure')):
-            errors.append("Medecin is not available at the specified date and heure.")
+        try:
+            salle = Salle.objects.get(pk=POST.get('salle'))
+            if not salle.is_disponible(POST.get('date'), POST.get('heure')):
+                errors.append("Salle is not available at the specified date and heure.")
+        except Salle.DoesNotExist:
+            errors.append("Salle not found.")
 
-        salle = Salle.objects.get(pk=POST.get('salle'))
-        if not salle: 
-            errors.append("Salle is not found")
-        elif not salle.is_disponible(POST.get('date'), POST.get('heure')):
-            errors.append("Salle is not available at the specified date and heure.")
+        try:
+            patient = Patient.objects.get(pk=POST.get('patient'))
+        except Patient.DoesNotExist:
+            errors.append("Patient not found.")
 
     # Return result
     return not bool(errors), errors
 
-def validateUpdateRendezVous(rendezvous_instance, POST):
+def validateUpdateRendezVous(POST, rendezvous_instance):
     errors = []
-
-    # Validate datetime fields
-    current_datetime = timezone.now()
-    if POST.get('date') and POST.get('date') < current_datetime.date():
-        errors.append("date must be greater than or equal to the current date.")
-    elif POST.get('heure') and POST.get('date') == current_datetime.date() and POST.get('heure') < current_datetime.time():
-        errors.append("Heure must be greater than or equal to the current time.")
-
-    # Validate medecin and salle availability
-    if medecin:
-        medecin = Medecin.objects.get(pk=medecin)
-        if medecin: 
-            errors.append("Medecin is not found.")
-
-        elif not medecin.is_disponible(POST.get('date'), POST.get('heure')):
-            errors.append("Medecin is not available at the specified date and heure.")
-
-    if salle:
-        salle = Salle.objects.get(pk=salle)
-        if salle: 
-            errors.append("Salle is not found.")
-
-        elif not salle.is_disponible(POST.get('date'), POST.get('heure')):
-            errors.append("Salle is not available at the specified date and heure.")
+    if rendezvous_instance.status == 'terminé':
+            errors.append("Cannot update a RendezVous with status 'terminé'.")
+    else:
+        if not POST.get('status'):
+            errors.append("Status is required for updating RendezVous.")
+        else:
+            status = POST['status']
+            
+            # Validate status against choices
+            if status not in dict(STATUS_CHOICES).keys():
+                errors.append("Invalid value for status. Please choose from the provided options.")
 
     # Return result
     return not bool(errors), errors
+
+# def validateUpdateRendezVous(POST, rendezvous_instance):
+#     errors = []
+
+#     # Validate datetime fields
+#     current_datetime = timezone.now()
+#     if POST.get('date') and POST.get('date') < current_datetime.date():
+#         errors.append("date must be greater than or equal to the current date.")
+#     elif POST.get('heure') and POST.get('date') == current_datetime.date() and POST.get('heure') < current_datetime.time():
+#         errors.append("Heure must be greater than or equal to the current time.")
+
+#     # Validate medecin and salle availability
+#     if medecin:
+#         medecin = Medecin.objects.get(pk=medecin)
+#         if medecin: 
+#             errors.append("Medecin is not found.")
+
+#         elif not medecin.is_disponible(POST.get('date'), POST.get('heure')):
+#             errors.append("Medecin is not available at the specified date and heure.")
+
+#     if salle:
+#         salle = Salle.objects.get(pk=salle)
+#         if salle: 
+#             errors.append("Salle is not found.")
+
+#         elif not salle.is_disponible(POST.get('date'), POST.get('heure')):
+#             errors.append("Salle is not available at the specified date and heure.")
+
+#     # Return result
+#     return not bool(errors), errors
 
 def validateCreateConsultation(POST):
     errors = []
@@ -371,9 +421,9 @@ def validateCreateConsultation(POST):
     # Validate rendezvous and status
     if POST.get("rendezvous"): 
         try:
-            rendezvous = RendezVous.objects.get(pk=rendezvous)
+            rendezvous = RendezVous.objects.get(pk=POST.get("rendezvous"))
             if rendezvous: 
-                if rendezvous.status == STATUS_CHOICES[2][1]:  # Check if RendezVous is 'annulé'
+                if rendezvous.status == dict(STATUS_CHOICES)["annulé"]:  # Check if RendezVous is 'annulé'
                     errors.append("Cannot create consultation for a RendezVous with status 'annulé'.")
             if not POST.get('diagnostique'):
                 errors.append("Diagnostique is required.")
@@ -387,22 +437,23 @@ def validateCreateConsultation(POST):
     else:
         errors.append("Rendez Vous is required.")
 
-
     # Return result
     return not bool(errors), errors
 
-# def validateUpdateConsultation(consultation_instance, diagnostique, prescription):
-#     errors = []
+def validateUpdateConsultation(POST, consultation_instance):
+    errors = []
 
-#     # Validate diagnostique and prescription
-#     if not diagnostique:
-#         errors.append("Diagnostique is required.")
-#     if not prescription:
-#         errors.append("Prescription is required.")
+    # Validate diagnostique if it is not blank in POST
+    diagnostique = POST.get('diagnostique')
+    if not diagnostique or not diagnostique.strip():
+        errors.append("Diagnostique cannot be blank.")
 
-#     # Return result
-#     return not bool(errors), errors
+    # Validate prescription if it is not blank in POST
+    prescription = POST.get('prescription')
+    if not prescription or not prescription.strip():
+        errors.append("Prescription cannot be blank.")
 
-
+    # Return result
+    return not bool(errors), errors
 
 

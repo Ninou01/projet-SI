@@ -1,0 +1,39 @@
+<!-- patient/UpdatePatient.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <h2>Update Patient Information</h2>
+
+  <form method="post" action="{% url 'UpdatePatient' patient.id %}">
+    {% csrf_token %}
+
+    <label for="nom">Nom:</label>
+    <input type="text" name="nom" value="{{ patient.nom }}" required>
+
+    <label for="prenom">Prenom:</label>
+    <input type="text" name="prenom" value="{{ patient.prenom }}" required>
+
+    <label for="dateNaissance">Date de Naissance:</label>
+    <input type="date" name="dateNaissance" value="{% if patient.dateNaissance %}{{ patient.dateNaissance|date:'Y-m-d' }}{% endif %}" required>
+
+    <label for="sexe">Sexe:</label>
+    <select name="sexe" required>
+      <option value="M" {% if patient.sexe == 'M' %}selected{% endif %}>Male</option>
+      <option value="F" {% if patient.sexe == 'F' %}selected{% endif %}>Female</option>
+    </select>
+
+    <label for="adresse">Adresse:</label>
+    <textarea name="adresse" required>{{ patient.adresse }}</textarea>
+
+    <label for="num_tel">Numéro de Téléphone:</label>
+    <input type="text" name="num_tel" value="{{ patient.num_tel }}" required>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" value="{{ patient.email }}" required>
+
+    <button type="submit">Update Patient</button>
+  </form>
+  {% include "../errors.html" %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<ul>
+    {% for salle in salles %}
+    <li>
+        {{salle}}
+    </li>
+    {% endfor %}
+<ul>
+{% endblock %}

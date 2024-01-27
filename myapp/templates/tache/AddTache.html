@@ -1,0 +1,31 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+        <form method="post" action="{% url 'AddTache' %}">
+                {% csrf_token %}
+
+                <label for="titre">Titre:</label>
+                <input type="text" name="titre" required>
+
+                <br>
+
+                <label for="description">Description:</label>
+                <textarea name="description" required></textarea>
+
+                <br>
+
+                <label for="service">Service:</label>
+                <select name="service" required>
+                        <option value="" disabled selected>Select a Service</option>
+                        {% for service_choice in services %}
+                        <option value="{{ service_choice.0 }}">{{ service_choice.1 }}</option>
+                        {% endfor %}
+                </select>
+
+                <br>
+
+                <button type="submit">Create Tache</button>
+        </form>
+        {% include "../errors.html" %}
+{% endblock %}

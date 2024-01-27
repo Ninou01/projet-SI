@@ -1,0 +1,14 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<ul>
+        {% for consultation in consultations %}
+        <li>
+            {{consultation}}<br>
+            {{consultation.medecin.email}}<br>
+            {{consultation.patient.email}}
+        </li>
+        {% endfor %}
+</ul>
+{% endblock %}

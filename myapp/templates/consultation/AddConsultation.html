@@ -1,0 +1,28 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<form method="post" action="">
+    {% csrf_token %}
+    
+    <!-- Display information about the associated RendezVous -->
+    <p>RendezVous for {{ rendezvous.patient }} with {{ rendezvous.medecin }} on {{ rendezvous.Date }} at {{ rendezvous.Heure }}</p>
+
+    <!-- Include RendezVous ID as a hidden input -->
+    {{rendezvous_id}}
+    <input type="hidden" name="rendezvous" value="{{ rendezvous_id }}">
+
+    <!-- Consultation form fields -->
+    <label for="id_diagnostique">Diagnostique:</label>
+    <textarea name="diagnostique" id="id_diagnostique" rows="4" cols="50"></textarea>
+
+    <label for="id_prescription">Prescription:</label>
+    <textarea name="prescription" id="id_prescription" rows="4" cols="50"></textarea>
+
+    <!-- Add any additional fields from your Consultation model -->
+
+    <button type="submit">Create Consultation</button>
+</form>
+
+{% include "../errors.html" %}
+{% endblock %}

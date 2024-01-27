@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-gtil$1mdfgsn3@w=uw@dmk*55(^d%45r@@$dvt93va-p!%o-rm
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

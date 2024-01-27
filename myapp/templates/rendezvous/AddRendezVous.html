@@ -1,0 +1,44 @@
+{% extends '../base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Available Medecins and Salles</h2>
+
+<p>Available options for {{ datetime }}:</p>
+
+<!-- Update the form with select lists for medecins, salles, and patients -->
+
+<form method="post" action="{% url 'AddRendezVous' %}">
+    {% csrf_token %}
+    <input type="hidden" name="date" value="{{ date }}">
+    <input type="hidden" name="heure" value="{{ heure }}">
+
+    <!-- Include other form fields as needed -->
+
+    <label for="medecin">Select a Medecin:</label>
+    <select name="medecin" id="medecin">
+        {% for medecin in medecins %}
+            <option value="{{ medecin.id }}">{{ medecin.nom }} {{ medecin.prenom }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="salle">Select a Salle:</label>
+    <select name="salle" id="salle">
+        {% for salle in salles %}
+            <option value="{{ salle.id }}">Salle {{ salle.numero }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="patient">Select a Patient:</label>
+    <select name="patient" id="patient">
+        {% for patient in patients %}
+            <option value="{{ patient.id }}">{{ patient.nom }} {{ patient.prenom }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Create RendezVous</button>
+</form>
+
+{% include "../errors.html" %}
+{% endblock %}
+
