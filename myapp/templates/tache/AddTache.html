@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+<h2>Ajouter Tache</h2>
+
         <form method="post" action="{% url 'AddTache' %}">
                 {% csrf_token %}
 

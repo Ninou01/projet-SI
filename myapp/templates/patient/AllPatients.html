@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block content %}
+<h2>Liste des Patients</h2>
+{% if user.is_staff %}
+<a href="{% url 'AddPatient' %}">ajouter patient</a><br>
+{% endif %}
+
+
 <ul>
         {% for patient in patients %}
         <li>

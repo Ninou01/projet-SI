@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block content %}
-hello
+<h2>Liste des Services</h2>
+
         {% for service in services %}
         <li>
             <a href="{% url 'OneService' service.id %}">{{service}}</a><br>

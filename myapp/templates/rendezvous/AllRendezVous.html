@@ -2,6 +2,11 @@
 {% load static %}
 
 {% block content %}
+<h2>Liste des RendezVous</h2>
+{% if user.is_staff %}
+<a href="{% url 'AddRendezVous' %}">ajouter rendezvous</a><br>
+{% endif %}
+
 <ul>
     {% for rdv in rendezVous %}
         <li>

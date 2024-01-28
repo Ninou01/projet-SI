@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+<h2>Update Chef Service</h2>
+
 <form method="post" action="{% url 'UpdateService' service.id %}">
     {% csrf_token %}
 

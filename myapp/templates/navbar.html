@@ -11,6 +11,9 @@
             <a href="{% url 'AllTaches' %}">taches</a>
         </li>
         <li>
+            <a href="{% url 'AllSalles' %}">salles</a>
+        </li>
+        <li>
             <a href="{% url 'AllMedecins' %}">medecins</a>
         </li>
         {% if user.is_staff %}
@@ -20,6 +23,15 @@
         {% elif user.medecin %}
             <li>
                 <a href="{% url 'AllPatients' %}">patients</a>
+            </li>
+        {% endif %}
+        {% if user.medecin %}
+            <li>
+                <a href="{% url 'OneMedecin' user.medecin.id %}">profile</a>
+            </li>
+        {% elif user.patient %}
+            <li>
+                <a href="{% url 'OnePatient' user.patient.id %}">profile</a>
             </li>
         {% endif %}
         {% if user.is_staff %}

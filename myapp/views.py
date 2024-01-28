@@ -373,7 +373,7 @@ def UpdatePatient(request, id):
         return render(request, 'patient/UpdatePatient.html', {'patient': patient, 'errors': []})
 
 @login_required
-@admin_or_concerned(RendezVous)
+@admin_or_concerned(RendezVous, "concerned_id")
 def AllPatientRendezVous(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -385,7 +385,7 @@ def AllPatientRendezVous(request, id):
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
 @login_required
-@admin_or_concerned(RendezVous)
+@admin_or_concerned(RendezVous, "concerned_id")
 def AllPatientRendezVousEnAttente(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -397,7 +397,7 @@ def AllPatientRendezVousEnAttente(request, id):
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
 @login_required
-@admin_or_concerned(RendezVous)
+@admin_or_concerned(RendezVous, "concerned_id")
 def AllPatientRendezVousAnnule(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -409,7 +409,7 @@ def AllPatientRendezVousAnnule(request, id):
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
 @login_required
-@admin_or_concerned(RendezVous)
+@admin_or_concerned(RendezVous, "concerned_id")
 def AllPatientRendezVousTemrine(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -422,7 +422,7 @@ def AllPatientRendezVousTemrine(request, id):
 
 
 @login_required
-@admin_or_concerned(RendezVous)
+@admin_or_concerned(Consultation, "concerned_id")
 def AllPatientConsultations(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)

@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+<h2>Liste des Taches</h2>
+
         {% for tache in taches %}
         <li>
             <a href="{% url 'OneTache' tache.id %}">{{tache}} - {{tache.service}}</a>

@@ -2,7 +2,12 @@
 {% load static %}
 
 {% block content %}
+<h2>Service</h2>
+
         service: {{service.nom}} <br>
         chef: {{service.chef}} <br>
         taches: <a href="{% url 'AllServiceTaches' service.id %}">taches</a><br>
+        {% if user.is_staff or user.medecin == rendezvous.medecin %}
+        <a href="{% url 'UpdateService' service.id %}">modifier chef service</a><br>
+        {% endif %}
 {% endblock %}

@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+<h2>Consultation Information</h2>
         patient: <a href="{% url 'OnePatient' consultation.patient.id %}">{{consultation.patient.nom}} {{consultation.patient.prenom}} </a><br>
         medecin: <a href="{% url 'OneMedecin' consultation.medecin.id %}">{{consultation.medecin.nom}} {{consultation.medecin.nom}} </a><br>
         rendezVous: <a href="{% url 'OneRendezVous' consultation.rendezvous.id %}">{{consultation.rendezvous}}</a><br>

@@ -82,18 +82,15 @@ class Patient(models.Model):
     def __str__(self):
         return f"{self.nom} {self.prenom}"
 
-    def clean(self):
-        if self.dateNaissance:
-            dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
-            if dateNaissance > timezone.now().date():
-                raise ValidationError("Date of birth cannot be greater than today's date.")
+    # def clean(self):
+    #     if self.dateNaissance:
+    #         dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
+    #         if dateNaissance > timezone.now().date():
+    #             raise ValidationError("Date of birth cannot be greater than today's date.")
         
 
     def save(self, *args, **kwargs):
-        if not self.pk: 
-            group, created = Group.objects.get_or_create(name='patient')
-            self.user.groups.add(group)
-        self.clean()
+        # self.clean()
         
         self.user.first_name = self.prenom
         self.user.last_name = self.nom
@@ -128,18 +125,15 @@ class Medecin(models.Model):
     def __str__(self):
         return f"{self.nom} {self.prenom}"
     
-    def clean(self):
-        if self.dateNaissance:
-            dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
-            if dateNaissance > timezone.now().date():
-                raise ValidationError("Date of birth cannot be greater than today's date.")
+    # def clean(self):
+    #     if self.dateNaissance:
+    #         dateNaissance = datetime.strptime(self.dateNaissance, "%Y-%m-%d").date()
+    #         if dateNaissance > timezone.now().date():
+    #             raise ValidationError("Date of birth cannot be greater than today's date.")
 
     def save(self, *args, **kwargs):
-        if not self.pk: 
-            group, created = Group.objects.get_or_create(name='medecin')
-            self.user.groups.add(group)
 
-        self.clean()
+        # self.clean()
         self.user.first_name = self.prenom
         self.user.last_name = self.nom
         self.user.username = f"{self.email}"

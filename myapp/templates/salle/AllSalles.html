@@ -2,11 +2,31 @@
 {% load static %}
 
 {% block content %}
+<h2>Liste des Salles</h2>
+{% if user.is_staff %}
+<a href="{% url 'AddSalle' %}">ajouter salle</a><br>
+{% endif %}
 <ul>
     {% for salle in salles %}
     <li>
         {{salle}}
+        {% if user.is_staff %}
+            <ul>
+                <li><a href="{% url 'AllSalleRendezVous' salle.id %}">liste des rendezvous</a></li>
+                <li><a href="{% url 'AllSalleRendezVousEnAttente' salle.id %}">liste des rendezvous en attente</a></li>
+                <li><a href="{% url 'AllSalleRendezVousAnnule' salle.id %}">liste des rendezvous annulé</a></li>
+                <li><a href="{% url 'AllSalleRendezVousTemrine' salle.id %}">liste des rendezvous terminé</a></li>
+            </ul>
+        {% endif %}
     </li>
     {% endfor %}
 <ul>
 {% endblock %}
+
+
+path('salles/', views.AllSalles, name="AllSalles"),
+path('salles/add/', views.AddSalle, name="AddSalle"),
+path('salles/<int:id>/rendezvous/', views.AllSalleRendezVous, name="AllSalleRendezVous"),
+path('salles/<int:id>/rendezvous/en-attente/', views.AllSalleRendezVousEnAttente, name="AllSalleRendezVousEnAttente"),
+path('salles/<int:id>/rendezvous/annule/', views.AllSalleRendezVousAnnule, name="AllSalleRendezVousAnnule"),
+path('salles/<int:id>/rendezvous/termine/', views.AllSalleRendezVousTemrine, name="AllSalleRendezVousTemrine"),

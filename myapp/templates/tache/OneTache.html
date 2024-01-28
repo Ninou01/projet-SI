@@ -2,7 +2,12 @@
 {% load static %}
 
 {% block content %}
+<h2>Taches</h2>
+
         tache : {{tache.titre}}<br>
         description : {{tache.description}}<br>
         service: <a href="{% url 'OneService' tache.service.id %}">{{tache.service}}</a><br>
+        {% if user.is_staff%}
+        <a href="{% url 'UpdateTache' tache.id %}">modifier tache</a><br>
+        {% endif %}
 {% endblock %}

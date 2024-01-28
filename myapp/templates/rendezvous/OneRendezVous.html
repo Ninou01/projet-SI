@@ -8,5 +8,7 @@
         date: {{rendezvous.date}}<br>
         heure: {{rendezvous.heure}}<br>
         status: {{rendezvous.status}}<br>
+        {% if user.is_staff or user.medecin == rendezvous.medecin %}
         <a href="{% url 'UpdatePatient' rendezvous.id %}">modifier status</a><br>
+        {% endif %}
 {% endblock %}
