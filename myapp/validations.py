@@ -1,5 +1,7 @@
 from datetime import datetime
 import re
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from django.forms import ValidationError
@@ -17,6 +19,34 @@ from .models import (
 )
 
 User = get_user_model()
+
+def validateLogin(POST):
+    errors = []
+    email = POST.get('email')
+    password = POST.get('password')
+
+    # Check if email is provided
+    if not email:
+        errors.append("Email is required.")
+
+    # Check if the email is a valid format
+    try:
+        User.objects.get(email=email)
+    except User.DoesNotExist:
+        errors.append("Invalid email.")
+
+    # Check if password is provided
+    if not password:
+        errors.append("Password is required.")
+
+    # Check if the provided email and password match a user
+    user = authenticate(username=email, password=password)
+    if user is None:
+        errors.append("Invalid email or password.")
+
+    # Return result
+    return not bool(errors), errors
+
 
 def validate_password_like_django(password):
   """

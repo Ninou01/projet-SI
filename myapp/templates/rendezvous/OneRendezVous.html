@@ -2,5 +2,11 @@
 {% load static %}
 
 {% block content %}
-        {{rendezvous}}
+        patient: <a href="{% url 'OnePatient' rendezvous.patient.id %}">{{rendezvous.patient}}</a><br>
+        medecin: <a href="{% url 'OneMedecin' rendezvous.medecin.id %}">{{rendezvous.medecin}}</a><br>
+        salle: {{rendezvous.salle}}<br>
+        date: {{rendezvous.date}}<br>
+        heure: {{rendezvous.heure}}<br>
+        status: {{rendezvous.status}}<br>
+        <a href="{% url 'UpdatePatient' rendezvous.id %}">modifier status</a><br>
 {% endblock %}

@@ -2,5 +2,12 @@
 {% load static %}
 
 {% block content %}
-        {{consultation}}
+        patient: <a href="{% url 'OnePatient' consultation.patient.id %}">{{consultation.patient.nom}} {{consultation.patient.prenom}} </a><br>
+        medecin: <a href="{% url 'OneMedecin' consultation.medecin.id %}">{{consultation.medecin.nom}} {{consultation.medecin.nom}} </a><br>
+        rendezVous: <a href="{% url 'OneRendezVous' consultation.rendezvous.id %}">{{consultation.rendezvous}}</a><br>
+        diagnostique: {{consultation.diagnostique}}<br>
+        prescription: {{consultation.prescription}}<br>
+        {% if user.is_staff or user.medecin.id ==  consultation.medecin.id%}
+                <a href="{% url 'UpdatePatient' consultation.id %}">modifier consultation</a><br>
+        {% endif %}
 {% endblock %}

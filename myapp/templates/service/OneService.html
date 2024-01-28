@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
-        {{service.nom}} <br>
-        {{service.chef}}
+        service: {{service.nom}} <br>
+        chef: {{service.chef}} <br>
+        taches: <a href="{% url 'AllServiceTaches' service.id %}">taches</a><br>
 {% endblock %}

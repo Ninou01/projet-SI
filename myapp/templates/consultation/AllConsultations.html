@@ -5,10 +5,8 @@
 <ul>
         {% for consultation in consultations %}
         <li>
-            {{consultation}}<br>
-            {{consultation.medecin.email}}<br>
-            {{consultation.patient.email}}
-        </li>
+            <a href="{% url 'OneConsultation' consultation.id %}">{{consultation}}</a>
+        </li><br>
         {% endfor %}
 </ul>
 {% endblock %}

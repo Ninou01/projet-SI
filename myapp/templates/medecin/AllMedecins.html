@@ -4,9 +4,9 @@
 {% block content %}
 <ul>
         {% for medecin in medecins %}
-        <li>
-            {{medecin}}
-        </li>
+            <li>
+                <a href="{% url 'OneMedecin' medecin.id %}">{{medecin.nom}} {{medecin.prenom}}</a><br>
+            </li>
         {% endfor %}
 </ul>
 {% endblock %}

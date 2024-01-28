@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from datetime import datetime
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
@@ -90,6 +90,9 @@ class Patient(models.Model):
         
 
     def save(self, *args, **kwargs):
+        if not self.pk: 
+            group, created = Group.objects.get_or_create(name='patient')
+            self.user.groups.add(group)
         self.clean()
         
         self.user.first_name = self.prenom
@@ -132,6 +135,10 @@ class Medecin(models.Model):
                 raise ValidationError("Date of birth cannot be greater than today's date.")
 
     def save(self, *args, **kwargs):
+        if not self.pk: 
+            group, created = Group.objects.get_or_create(name='medecin')
+            self.user.groups.add(group)
+
         self.clean()
         self.user.first_name = self.prenom
         self.user.last_name = self.nom

@@ -2,5 +2,7 @@
 {% load static %}
 
 {% block content %}
-        {{tache}} <br>
+        tache : {{tache.titre}}<br>
+        description : {{tache.description}}<br>
+        service: <a href="{% url 'OneService' tache.service.id %}">{{tache.service}}</a><br>
 {% endblock %}

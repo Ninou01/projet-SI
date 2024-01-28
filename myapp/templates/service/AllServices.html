@@ -4,7 +4,8 @@
 {% block content %}
 hello
         {% for service in services %}
-        <br>
-            {{service.nom}}
+        <li>
+            <a href="{% url 'OneService' service.id %}">{{service}}</a><br>
+        </li>
         {% endfor %}
 {% endblock %}

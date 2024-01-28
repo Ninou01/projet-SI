@@ -4,9 +4,9 @@
 {% block content %}
 <ul>
     {% for rdv in rendezVous %}
-    <li>
-        {{rdv}}
-    </li>
+        <li>
+            <a href="{% url 'OneRendezVous' rdv.id %}">{{rdv}} - {{rdv.status}}</a><br>
+        </li>
     {% endfor %}
 </ul>
 {% endblock %}

@@ -1,0 +1,57 @@
+{% if user.is_authenticated %}
+<nav>
+    <ul>
+        <li>
+            <a href="{% url 'Home' %}">home</a>
+        </li>
+        <li>
+            <a href="{% url 'AllServices' %}">services</a>
+        </li>
+        <li>
+            <a href="{% url 'AllTaches' %}">taches</a>
+        </li>
+        <li>
+            <a href="{% url 'AllMedecins' %}">medecins</a>
+        </li>
+        {% if user.is_staff %}
+            <li>
+                <a href="{% url 'AllPatients' %}">patients</a>
+            </li>
+        {% elif user.medecin %}
+            <li>
+                <a href="{% url 'AllPatients' %}">patients</a>
+            </li>
+        {% endif %}
+        {% if user.is_staff %}
+            <li>
+                <a href="{% url 'AllRendezVous' %}">Rendez Vous</a>
+            </li>
+        {% elif user.medecin %}
+            <li>
+                <a href="{% url 'AllMedecinRendezVous' user.medecin.id %}">Rendez Vous</a>
+            </li>
+        {% elif user.patient %}
+            <li>
+                <a href="{% url 'AllPatientRendezVous' user.patient.id %}">Rendez Vous</a>
+            </li>
+        {% endif %}
+        {% if user.is_staff %}
+            <li>
+                <a href="{% url 'AllConsultations' %}">consultations</a>
+            </li>
+        {% elif user.medecin %}
+            <li>
+                <a href="{% url 'AllMedecinConsultations' user.medecin.id %}">consultations</a>
+            </li>
+        {% elif user.patient %}
+            <li>
+                <a href="{% url 'AllPatientConsultations' user.patient.id %}">consultations</a>
+            </li>
+        {% endif %}
+        <li>
+            <a href="{% url 'Logout' %}">logout</a>
+        </li>
+    </ul>
+</nav>
+  
+{% endif %}

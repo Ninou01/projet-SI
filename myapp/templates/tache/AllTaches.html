@@ -3,7 +3,8 @@
 
 {% block content %}
         {% for tache in taches %}
-        <br>
-            {{tache}}
+        <li>
+            <a href="{% url 'OneTache' tache.id %}">{{tache}} - {{tache.service}}</a>
+        </li><br>
         {% endfor %}
 {% endblock %}

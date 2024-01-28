@@ -1,5 +1,13 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.decorators import login_required
+from .decorators import (
+    adminonly, 
+    admin_or_medecin, 
+    admin_or_patient_concerned,
+    admin_or_medecin_concerned,
+    admin_or_concerned,
+)
 
 from .validations import (
     validateCreateConsultation,
@@ -15,7 +23,7 @@ from .validations import (
     validateUpdateService,
     validateUpdateTache
 )
-from .services import (
+from .utils import (
     createConsultation,
     createMedecin,
     createPatient,
@@ -50,12 +58,14 @@ def handler404(request, *args, **argv):
 def handler500(request, *args, **argv):
     return render(request, '500.html', status=500)
 
+@login_required
 def home(request):
     return render(request, "home.html")
 
 ##############################################################################
 # services
 
+@login_required
 def AllServices(request):
     services = Service.objects.all()
 
@@ -66,6 +76,7 @@ def AllServices(request):
     }
     return render(request, 'service/AllServices.html', context)
 
+@login_required
 def OneService(request, id):
     service = get_object_or_404(Service, id=id)
     context = {
@@ -73,6 +84,8 @@ def OneService(request, id):
     }
     return render(request, 'service/OneService.html', context)
 
+@login_required
+@adminonly
 def UpdateService(request, id):
     # Get the Service instance or return a 404 error if not found
     service_id = id
@@ -117,6 +130,7 @@ def UpdateService(request, id):
     }
     return render(request, 'service/UpdateService.html', context)
 
+@login_required
 def AllServiceTaches(request, id):
     service_id = id
     service = get_object_or_404(Service, id=service_id)
@@ -130,6 +144,7 @@ def AllServiceTaches(request, id):
 ##############################################################################
 # medecins
 
+@login_required
 def AllMedecins(request):
     medecins = Medecin.objects.all()
 
@@ -140,6 +155,7 @@ def AllMedecins(request):
     }
     return render(request, 'medecin/AllMedecins.html', context)
 
+@login_required
 def OneMedecin(request, id):
     medecin = get_object_or_404(Medecin, id=id)
     context = {
@@ -147,6 +163,8 @@ def OneMedecin(request, id):
     }
     return render(request, 'medecin/OneMedecin.html', context)
 
+@login_required
+@adminonly
 def AddMedecin(request):
     context = {
         "services": dict(SERVICE_NAME_CHOICES),
@@ -170,6 +188,8 @@ def AddMedecin(request):
     # If it's a GET request, just render the form
     return render(request, 'medecin/AddMedecin.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def UpdateMedecin(request, id):
     medecin_id = id
     # Get the Medecin instance or return a 404 error if not found
@@ -197,6 +217,8 @@ def UpdateMedecin(request, id):
 
     return render(request, 'medecin/UpdateMedecin.html', {'medecin': medecin_instance, 'services': services, 'errors': errors, 'SPECIALITE_CHOICES': SPECIALITE_CHOICES})
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinRendezVous(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -207,6 +229,8 @@ def AllMedecinRendezVous(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinRendezVousEnAttente(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -217,6 +241,8 @@ def AllMedecinRendezVousEnAttente(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinRendezVousAnnule(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -227,6 +253,8 @@ def AllMedecinRendezVousAnnule(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinRendezVousTemrine(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -237,6 +265,8 @@ def AllMedecinRendezVousTemrine(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinRendezVous(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -255,6 +285,8 @@ def AllMedecinRendezVous(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_medecin_concerned
 def AllMedecinConsultations(request, id):
     medecin_id = id
     medecin = get_object_or_404(Medecin, id=medecin_id)
@@ -278,6 +310,8 @@ def AllMedecinConsultations(request, id):
 ##############################################################################
 # patients
 
+@login_required
+@admin_or_medecin
 def AllPatients(request):
     patients = Patient.objects.all()
 
@@ -288,6 +322,7 @@ def AllPatients(request):
     }
     return render(request, 'patient/AllPatients.html', context)
 
+@login_required
 def OnePatient(request, id):
     patient = get_object_or_404(Patient, id=id)
     context = {
@@ -295,6 +330,8 @@ def OnePatient(request, id):
     }
     return render(request, 'patient/OnePatient.html', context)
 
+@login_required
+@adminonly
 def AddPatient(request):
     if request.method == 'POST':
 
@@ -313,6 +350,8 @@ def AddPatient(request):
     # If it's a GET request, just render the form
     return render(request, 'patient/AddPatient.html')
 
+@login_required
+@admin_or_patient_concerned
 def UpdatePatient(request, id):
     # Retrieve the patient instance
     patient_id = id
@@ -333,6 +372,8 @@ def UpdatePatient(request, id):
         # If it's a GET request, render the form with the current patient data
         return render(request, 'patient/UpdatePatient.html', {'patient': patient, 'errors': []})
 
+@login_required
+@admin_or_concerned(RendezVous)
 def AllPatientRendezVous(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -343,6 +384,8 @@ def AllPatientRendezVous(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_concerned(RendezVous)
 def AllPatientRendezVousEnAttente(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -353,6 +396,8 @@ def AllPatientRendezVousEnAttente(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_concerned(RendezVous)
 def AllPatientRendezVousAnnule(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -363,6 +408,8 @@ def AllPatientRendezVousAnnule(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_concerned(RendezVous)
 def AllPatientRendezVousTemrine(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -374,6 +421,8 @@ def AllPatientRendezVousTemrine(request, id):
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
 
+@login_required
+@admin_or_concerned(RendezVous)
 def AllPatientConsultations(request, id):
     patient_id = id
     patient = get_object_or_404(Patient, id=patient_id)
@@ -395,6 +444,8 @@ def AllPatientConsultations(request, id):
 
 ##############################################################################
 # Salles
+
+@login_required
 def AllSalles(request):
     salles = Salle.objects.all()
 
@@ -405,6 +456,8 @@ def AllSalles(request):
     }
     return render(request, 'salle/AllSalles.html', context)
 
+@login_required
+@adminonly
 def AddSalle(request):
     if request.method == 'POST':
 
@@ -423,6 +476,8 @@ def AddSalle(request):
     # If it's a GET request, just render the form
     return render(request, 'salle/AddSalle.html')
 
+@login_required
+@adminonly
 def AllSalleRendezVous(request, id):
     salle_id = id
     salle = get_object_or_404(Salle, id=salle_id)
@@ -433,6 +488,8 @@ def AllSalleRendezVous(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@adminonly
 def AllSalleRendezVousEnAttente(request, id):
     salle_id = id
     salle = get_object_or_404(Salle, id=salle_id)
@@ -443,6 +500,8 @@ def AllSalleRendezVousEnAttente(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@adminonly
 def AllSalleRendezVousAnnule(request, id):
     salle_id = id
     salle = get_object_or_404(Salle, id=salle_id)
@@ -453,6 +512,8 @@ def AllSalleRendezVousAnnule(request, id):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@adminonly
 def AllSalleRendezVousTemrine(request, id):
     salle_id = id
     salle = get_object_or_404(Salle, id=salle_id)
@@ -468,6 +529,8 @@ def AllSalleRendezVousTemrine(request, id):
 ##############################################################################
 # consultations
 
+@login_required
+@adminonly
 def AllConsultations(request):
     consultations = Consultation.objects.all()
 
@@ -478,6 +541,8 @@ def AllConsultations(request):
     }
     return render(request, 'consultation/AllConsultations.html', context)
 
+@login_required
+@admin_or_concerned(Consultation)
 def OneConsultation(request, id):
     consultation = get_object_or_404(Consultation, id=id)
     context = {
@@ -485,6 +550,8 @@ def OneConsultation(request, id):
     }
     return render(request, 'consultation/OneConsultation.html', context)
 
+@login_required
+@adminonly
 def AddConsultation(request, id):
     rendezvous_id = id
     rdv = get_object_or_404(RendezVous, id=rendezvous_id)
@@ -514,9 +581,26 @@ def AddConsultation(request, id):
     
     return render(request, 'consultation/AddConsultation.html', context)
 
+@login_required
 def UpdateConsultation(request, id):
     consultation_id = id
     consultation_instance = get_object_or_404(Consultation, id=consultation_id)
+    try:
+        if request.user.is_staff() or request.user.medecin == consultation_instance.medecin:
+            if request.method == 'POST':
+                is_valid, errors = validateUpdateConsultation(request.POST, consultation_instance)
+
+                if is_valid:
+                    # Update consultation
+                    updateConsultation(consultation_instance, request.POST)
+                    
+                    # Redirect to the consultation page or any other desired page
+                    return redirect(f'/consultations/{id}')
+                else:
+                    # If validation fails, render the update page with errors
+                    return render(request, 'consultation/UpdateConsultation.html', {'consultation': consultation_instance, 'errors': errors})
+    except:
+        return redirect(f'/')
 
     if request.method == 'POST':
         is_valid, errors = validateUpdateConsultation(request.POST, consultation_instance)
@@ -537,6 +621,8 @@ def UpdateConsultation(request, id):
 ##############################################################################
 # RendezVous
 
+@login_required
+@adminonly
 def AllRendezVous(request):
     rendezvous = RendezVous.objects.all()
 
@@ -547,6 +633,8 @@ def AllRendezVous(request):
     }
     return render(request, 'rendezvous/AllRendezVous.html', context)
 
+@login_required
+@admin_or_concerned(RendezVous)
 def OneRendezVous(request, id):
     rendezvous = get_object_or_404(RendezVous, id=id)
     context = {
@@ -555,6 +643,8 @@ def OneRendezVous(request, id):
     return render(request, 'rendezvous/OneRendezVous.html', context)
 
 
+@login_required
+@adminonly
 def SelectDatetime(request):
     if request.method == 'POST':
         # Get date and time from the form
@@ -588,6 +678,8 @@ def SelectDatetime(request):
     # If it's a GET request, just render the form
     return render(request, 'rendezvous/SelectDatetime.html')
 
+@login_required
+@adminonly
 def AddRendezVous(request):
     if request.method == 'POST':
         context = {
@@ -613,31 +705,39 @@ def AddRendezVous(request):
     # If it's a GET request, redirect to the available options page
     return redirect('/rendezvous/selectdatetime')
 
+@login_required
+@adminonly
 def deleterdv(request, id):
     instance = RendezVous.objects.get(id=id)
     instance.delete()
     return redirect("/rendezvous/")
 
 
+@login_required
+@admin_or_concerned(RendezVous)
 def UpdateRendezVous(request, id):
     # Get the RendezVous instance
     rendezvous_id = id
     rendezvous_instance = get_object_or_404(RendezVous, pk=rendezvous_id)
 
     # Handle POST request
-    if request.method == 'POST':
-        # Validate the update
-        is_valid, errors = validateUpdateRendezVous(request.POST, rendezvous_instance)
+    try:
+        if request.user.is_staff() or request.user.medecin == rendezvous_instance.medecin:
+            if request.method == 'POST':
+                # Validate the update
+                is_valid, errors = validateUpdateRendezVous(request.POST, rendezvous_instance)
 
-        if is_valid:
-            # Update the RendezVous
-            updateRendezVous(rendezvous_instance, request.POST)
-            return redirect(f'/rendezvous/{id}')  # Redirect to the RendezVous list page after successful update
-        else:
-            # If validation fails, render the form with error messages
-            return render(request, 'rendezvous/UpdateRendezVous.html', {'errors': errors, 'rendezvous': rendezvous_instance})
+                if is_valid:
+                    # Update the RendezVous
+                    updateRendezVous(rendezvous_instance, request.POST)
+                    return redirect(f'/rendezvous/{id}')  # Redirect to the RendezVous list page after successful update
+                else:
+                    # If validation fails, render the form with error messages
+                    return render(request, 'rendezvous/UpdateRendezVous.html', {'errors': errors, 'rendezvous': rendezvous_instance})
 
-    # Handle GET request
+            # Handle GET request
+    except:
+        return redirect('/')
     if rendezvous_instance and rendezvous_instance.status == 'terminé':
         return redirect(f'/rendezvous/{rendezvous_id}')
     return render(request, 'rendezvous/UpdateRendezVous.html', {'rendezvous': rendezvous_instance, 'status_choices': STATUS_CHOICES})
@@ -646,6 +746,7 @@ def UpdateRendezVous(request, id):
 ##############################################################################
 # Tache
 
+@login_required
 def AllTaches(request):
     taches = Tache.objects.all()
 
@@ -654,6 +755,7 @@ def AllTaches(request):
     }
     return render(request, 'tache/AllTaches.html', context)
 
+@login_required
 def OneTache(request, id):
     tache = get_object_or_404(Tache, id=id)
     context = {
@@ -661,6 +763,8 @@ def OneTache(request, id):
     }
     return render(request, 'tache/OneTache.html', context)
 
+@login_required
+@adminonly
 def AddTache(request):
     # Handle POST request
     if request.method == 'POST':
@@ -683,6 +787,8 @@ def AddTache(request):
     # Handle GET request
     return render(request, 'tache/AddTache.html', {'services': SERVICE_NAME_CHOICES})
 
+@login_required
+@adminonly
 def UpdateTache(request, id):
     tache_id = id
     tache_instance = get_object_or_404(Tache, pk=tache_id)

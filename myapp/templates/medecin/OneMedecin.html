@@ -2,5 +2,21 @@
 {% load static %}
 
 {% block content %}
-        {{medecin}} <br>
+        nom: {{medecin.nom}} <br>
+        prenom: {{medecin.prenom}} <br>
+        dateNaissance: {{medecin.dateNaissance}} <br>
+        sexe: {{medecin.sexe}} <br>
+        adresse: {{medecin.adresse}} <br>
+        email: {{medecin.email}} <br>
+        num_tel: {{medecin.num_tel}} <br>
+        specialite: {{medecin.specialite}} <br>
+        service: {{medecin.service}} <br>
+        {% if user.is_staff or user.medecin.id == medecin.id %}
+                <a href="{% url 'AllMedecinConsultations' medecin.id %}">consultations</a><br>
+                <a href="{% url 'AllMedecinRendezVous' medecin.id %}">rendez vous</a><br>
+                <a href="{% url 'AllMedecinRendezVousEnAttente' medecin.id %}">rendez vous en attente</a><br>
+                <a href="{% url 'AllMedecinRendezVousAnnule' medecin.id %}">rendez vous en annulés</a><br>
+                <a href="{% url 'AllMedecinRendezVousTemrine' medecin.id %}">rendez vous terminés</a><br>
+                <a href="{% url 'UpdateMedecin' medecin.id %}">modifier les information</a><br>
+        {% endif %}
 {% endblock %}
